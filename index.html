@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Ánimo Seguro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        h2 {
+            font-weight: 800;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            letter-spacing: -0.025em;
+        }
+
+        /* Información de Sesión */
+        .full-id-display {
+            display: inline-block;
+            background: #eef2ff;
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid #e0e7ff;
+        }
+
+        /* Admin Panel Moderno */
+        #admin-panel {
+            display: none;
+            background: #1e293b;
+            color: white;
+            padding: 24px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            animation: slideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .selectors-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #94a3b8; }
+        
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.95rem;
+            background: white;
+            margin-top: 5px;
+            outline: none;
+        }
+
+        /* Input de Código Estilizado */
+        .codigo-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #codigo-input {
+            width: 100%;
+            padding: 14px;
+            text-align: center;
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        #codigo-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Grilla de Emojis */
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 2rem;
+        }
+
+        .emoji-btn {
+            background: white;
+            border: 1px solid #f1f5f9;
+            border-radius: 18px;
+            padding: 18px 10px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .emoji-btn:hover:not(:disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+
+        .emoji-btn:active:not(:disabled) { transform: scale(0.95); }
+
+        .emoji-btn span {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 8px;
+            color: var(--text-sub);
+        }
+
+        .emoji-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.8); }
+
+        /* Medidor SVG */
+        .gauge-container { position: relative; width: 100%; margin: 0 auto; }
+        #gauge-needle { 
+            transition: transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            transform-origin: 150px 150px; 
+        }
+
+        .mood-label { font-size: 1.6rem; font-weight: 800; margin-top: -30px; color: var(--text-main); }
+        .stats { color: var(--text-sub); font-size: 0.85rem; margin-top: 8px; font-weight: 500; }
+        
+        #status-msg { margin-top: 10px; font-size: 0.85rem; min-height: 20px; transition: color 0.3s; }
+
+        /* Botones de Acción */
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: opacity 0.2s;
+        }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-reset { background: var(--danger); color: white; margin-top: 15px; width: 100%; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 onclick="handleSecretClick()" style="cursor:pointer;">Ánimo del Aula</h2>
+    <div id="full-id" class="full-id-display">Cargando curso...</div>
+
+    <div id="admin-panel">
+        <p style="margin:0 0 15px 0; font-weight:bold; color: var(--primary);">⚙️ Configuración</p>
+        <div class="selectors-container">
+            <div>
+                <label>Grado</label>
+                <select id="grado" onchange="updateFullID()">
+                    <option value="6">6°</option><option value="7">7°</option><option value="8">8°</option>
+                    <option value="9">9°</option><option value="10">10°</option><option value="11">11°</option>
+                </select>
+            </div>
+            <div>
+                <label>Sección</label>
+                <select id="seccion" onchange="updateFullID()">
+                    <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label>Fecha de consulta</label>
+            <input type="date" id="date-selector" onchange="loadDayData()">
+        </div>
+        <div style="margin-top:15px;">
+            <label>Nuevo Código Profesor</label>
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="nuevo-codigo-input" placeholder="Nueva Clave">
+                <button class="btn-action btn-save" onclick="changeAccessCode()">Actualizar</button>
+            </div>
+        </div>
+        <button class="btn-action btn-reset" onclick="resetLocalStorage()">Desbloquear Votación</button>
+        <button onclick="document.getElementById('admin-panel').style.display='none'" style="background:transparent; color:#94a3b8; border:none; width:100%; margin-top:10px; cursor:pointer">Cerrar</button>
+    </div>
+
+    <div class="codigo-container">
+        <input type="text" id="codigo-input" placeholder="CÓDIGO" maxlength="10">
+        <div id="status-msg"></div>
+    </div>
+
+    <div class="emoji-grid" id="buttons-container">
+        <button class="emoji-btn" onclick="registerMood(5)">🤩<span>Excelente</span></button>
+        <button class="emoji-btn" onclick="registerMood(4)">😊<span>Bien</span></button>
+        <button class="emoji-btn" onclick="registerMood(3)">😐<span>Neutral</span></button>
+        <button class="emoji-btn" onclick="registerMood(2)">😕<span>Triste</span></button>
+        <button class="emoji-btn" onclick="registerMood(1)">😢<span>Mal</span></button>
+        <button class="emoji-btn" onclick="registerMood(0)">😡<span>Enojado</span></button>
+    </div>
+
+    <div class="results">
+        <div class="gauge-container">
+            <svg viewBox="0 0 300 180">
+                <defs>
+                    <linearGradient id="gG" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#f87171"/>
+                        <stop offset="50%" stop-color="#fbbf24"/>
+                        <stop offset="100%" stop-color="#34d399"/>
+                    </linearGradient>
+                </defs>
+                <path d="M50,150 A100,100 0 0,1 250,150" fill="none" stroke="#f1f5f9" stroke-width="20" stroke-linecap="round"/>
+                <path d="M50,150 A100,100 0 0,1 250,150" fill="none" stroke="url(#gG)" stroke-width="20" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="0"/>
+                <line id="gauge-needle" x1="150" y1="150" x2="150" y2="70" stroke="#1e293b" stroke-width="6" stroke-linecap="round" />
+                <circle cx="150" cy="150" r="10" fill="#1e293b" />
+            </svg>
+        </div>
+        <div id="mood-text" class="mood-label">-</div>
+        <div id="counter" class="stats">Votos: 0 | Promedio: 0.00</div>
+    </div>
+</div>
+
+<script>
+    // --- Lógica se mantiene igual para compatibilidad con tu API ---
+    const API_URL = "https://ofotzcqyhl.execute-api.us-east-1.amazonaws.com/animo"; 
+    const dateInput = document.getElementById('date-selector');
+    const gradoSelect = document.getElementById('grado');
+    const seccionSelect = document.getElementById('seccion');
+    const fullIdDisplay = document.getElementById('full-id');
+    const statusMsg = document.getElementById('status-msg');
+    const codigoInput = document.getElementById('codigo-input');
+
+    dateInput.value = new Date().toISOString().split('T')[0];
+    let currentData = { totalScore: 0, count: 0 };
+    let secretClicks = 0;
+    let clickTimer;
+
+    function handleSecretClick() {
+        secretClicks++;
+        clearTimeout(clickTimer);
+        if (secretClicks >= 5) {
+            const pass = prompt("Acceso administrativo:");
+            if (pass === "PROFE123") {
+                document.getElementById('admin-panel').style.display = 'block';
+            }
+            secretClicks = 0;
+            return;
+        }
+        clickTimer = setTimeout(() => { secretClicks = 0; }, 2000); 
+    }
+
+    async function changeAccessCode() {
+        const nuevo = document.getElementById('nuevo-codigo-input').value.trim().toUpperCase();
+        if (!nuevo) return;
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: 'update_codigo', nuevoCodigo: nuevo })
+            });
+            if (res.ok) alert("✅ Código actualizado");
+            else alert("Error al actualizar");
+        } catch (e) { alert("Error de red"); }
+    }
+
+    function updateFullID() {
+        const id = `${gradoSelect.value}-${seccionSelect.value}`;
+        fullIdDisplay.innerText = `GRUPO ${id}`;
+        checkIfVoted(id);
+        loadDayData();
+    }
+
+    function checkIfVoted(cursoId) {
+        const alreadyVoted = localStorage.getItem(`voto_${cursoId}_${dateInput.value}`);
+        document.querySelectorAll('.emoji-btn').forEach(b => b.disabled = !!alreadyVoted);
+        statusMsg.innerText = alreadyVoted ? "✅ Ánimo enviado hoy" : "";
+        statusMsg.style.color = "var(--success)";
+    }
+
+    async function loadDayData() {
+        const compositeKey = `${gradoSelect.value}-${seccionSelect.value}#${dateInput.value}`;
+        try {
+            const response = await fetch(`${API_URL}?fecha=${encodeURIComponent(compositeKey)}`);
+            
+            // Verificamos si la respuesta fue exitosa
+            if (!response.ok) throw new Error("Fallo en el servidor");
+
+            const data = await response.json();
+            
+            // CORRECCIÓN: Verificamos que 'data' exista antes de buscar '.item'
+            if (data && data.item) {
+                currentData = data.item;
+            } else {
+                currentData = { totalScore: 0, count: 0 };
+            }
+            
+            updateDisplay();
+        } catch (e) { 
+            console.error("Error detallado:", e);
+            // Resetear visualmente si hay error
+            currentData = { totalScore: 0, count: 0 };
+            updateDisplay();
+            statusMsg.innerText = "Sin conexión con los datos de hoy";
+        }
+    }
+
+    async function registerMood(score) {
+        const cursoId = `${gradoSelect.value}-${seccionSelect.value}`;
+        const compositeKey = `${cursoId}#${dateInput.value}`;
+        const codigo = codigoInput.value.trim().toUpperCase();
+
+        if(!codigo) { statusMsg.innerText = "⚠️ Ingresa el código"; statusMsg.style.color = "var(--danger)"; return; }
+
+        statusMsg.innerText = "⏳ Enviando...";
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: 'voto', fecha: compositeKey, score: score, codigo: codigo })
+            });
+            if(res.status === 403) {
+                alert("❌ Código incorrecto");
+                return;
+            }
+            localStorage.setItem(`voto_${cursoId}_${dateInput.value}`, "true");
+            await loadDayData();
+            checkIfVoted(cursoId);
+        } catch (e) { alert("Error de servidor"); }
+    }
+
+    function updateDisplay() {
+        const { totalScore, count } = currentData;
+        const needle = document.getElementById('gauge-needle');
+        if (count === 0) {
+            needle.style.transform = `rotate(-90deg)`;
+            document.getElementById('mood-text').innerText = "Sin votos";
+            document.getElementById('counter').innerText = "Esperando primer ingreso";
+            return;
+        }
+        const average = totalScore / count;
+        needle.style.transform = `rotate(${(average / 5) * 180 - 90}deg)`;
+        
+        const moodMap = [
+            { min: 0, label: "Enojados 😡" }, { min: 1, label: "Mal 😢" },
+            { min: 2, label: "Tristes 😕" }, { min: 3, label: "Neutral 😐" },
+            { min: 4, label: "Bien 😊" }, { min: 4.6, label: "Excelente! 🤩" }
+        ];
+        const mood = [...moodMap].reverse().find(m => average >= m.min);
+        document.getElementById('mood-text').innerText = mood.label;
+        document.getElementById('counter').innerText = `Votos: ${count} | Promedio: ${average.toFixed(2)}`;
+    }
+
+    function resetLocalStorage() {
+        if(confirm("¿Reiniciar votos locales?")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+    
+    window.onload = updateFullID;
+</script>
+
+</body>
+</html>
